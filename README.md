@@ -104,20 +104,288 @@ dataFull = pd.concat([dataT2013, dataT2014, dataT2015, dataT2016, dataT2017, dat
 
 
 ```python
-dataFull.columns = ['Pista', 'Posição', 'Nº do Piloto', 'Piloto', 'Equipe', 'Posição de largada', 'Voltas', 'Tempo/Abandono', 'Pontos', 'Volta mais rápida', 'Temporada']
+dataFull.columns = ['País', 'Posição', 'Nº do Piloto', 'Piloto', 'Equipe', 'Posição de largada', 'Voltas', 'Tempo/Abandono', 'Pontos', 'Volta mais rápida', 'Temporada']
 ```
 
 # 3. Análise dos Dados
 
 ### 3.1. Qual piloto chegou mais vezes em 2º lugar?
 
+
+```python
+# Substituindo valores não numéricos da coluna 'Posição' para o numeral '0' e convertemos para inteiro
+dataFull['Posição'] = dataFull['Posição'].replace('NC', 0).replace('EX', 0).replace('DQ', 0).astype('int64')
+
+# Obtemos nosso resultado com o piloto que chegou mais vezes em 2° lugar
+count_2nd_place = dataFull[dataFull['Posição'] == 2]['Piloto'].value_counts()
+
+driver_max_2nd_place = count_2nd_place.idxmax()
+
+print("O piloto que chegou mais vezes em 2° lugar foi", driver_max_2nd_place)
+```
+
+    O piloto que chegou mais vezes em 2° lugar foi Lewis Hamilton
+
+
 ### 3.2. Quais pilotos ganharam mais posições em relação à posição de largada?
+
+
+```python
+# Criamos uma coluna 'Ganho de Posição'
+dataFull['Ganho de Posição'] = dataFull['Posição de largada'] - dataFull['Posição']
+
+# Transformamos valores não numéricos em '0' e transformamos a coluna como inteiro
+dataFull['Ganho de Posição'] = dataFull['Ganho de Posição'].fillna(0).astype('int64')
+
+# Agrupamos os pilotos e somamos e ordenamos como decrescente
+result = dataFull.groupby('Piloto')['Ganho de Posição'].sum()
+result = result.sort_values(ascending=False)
+
+# Obtemos nosso resultado como os pilotos que mais ganharam posições
+print("Pilotos que ganharam mais posições:\n")
+print(result.head(5))
+```
+
+    Pilotos que ganharam mais posições:
+    
+    Piloto
+    Fernando Alonso    644
+    Romain Grosjean    625
+    Marcus Ericsson    604
+    Carlos Sainz       549
+    Lance Stroll       511
+    Name: Ganho de Posição, dtype: int64
+
 
 ### 3.3. Qual temporada teve mais abandonos de carros durante as corridas?
 
+
+```python
+dropouts = dataFull[dataFull['Tempo/Abandono'] == 'DNF']
+
+# Agrupamos os dados por temporada e contamos o número de abandonos
+dropouts_count = dropouts.groupby('Temporada').size()
+
+# Identificar a temporada com o maior número de abandonos
+session_max_dropouts = dropouts_count.idxmax()
+
+print("Temporada com o mais abandonos:", session_max_dropouts)
+print("Número de abandonos:", dropouts_count[session_max_dropouts])
+```
+
+    Temporada com o mais abandonos: 2017
+    Número de abandonos: 92
+
+
 ### 3.4. Qual numeração fixa foi utilizada por cada piloto?
 
+
+```python
+fixed_numbering = dataFull.groupby('Piloto')['Nº do Piloto'].unique()
+
+# Imprimimos a numeração fixa de cada piloto
+for driver, numbering in fixed_numbering.items():
+    print("Piloto:", driver)
+    print("Numeração Fixa:", numbering)
+    print()
+```
+
+    Piloto: Adrian Sutil
+    Numeração Fixa: [15 99]
+    
+    Piloto: Alexander Albon
+    Numeração Fixa: [23]
+    
+    Piloto: Alexander Rossi
+    Numeração Fixa: [53]
+    
+    Piloto: Andre Lotterer
+    Numeração Fixa: [45]
+    
+    Piloto: Antonio Giovinazzi
+    Numeração Fixa: [36 99]
+    
+    Piloto: Brendon Hartley
+    Numeração Fixa: [39 28]
+    
+    Piloto: Carlos Sainz
+    Numeração Fixa: [55]
+    
+    Piloto: Charles Leclerc
+    Numeração Fixa: [16]
+    
+    Piloto: Charles Pic
+    Numeração Fixa: [20]
+    
+    Piloto: Daniel Ricciardo
+    Numeração Fixa: [19  3]
+    
+    Piloto: Daniil Kvyat
+    Numeração Fixa: [26]
+    
+    Piloto: Daniil Kyvat
+    Numeração Fixa: [26]
+    
+    Piloto: Esteban Gutierrez
+    Numeração Fixa: [12 21]
+    
+    Piloto: Esteban Ocon
+    Numeração Fixa: [31]
+    
+    Piloto: Felipe Massa
+    Numeração Fixa: [ 4 19]
+    
+    Piloto: Felipe Nasr
+    Numeração Fixa: [12]
+    
+    Piloto: Fernando Alonso
+    Numeração Fixa: [ 3 14]
+    
+    Piloto: George Russell
+    Numeração Fixa: [63]
+    
+    Piloto: Giedo van der Garde
+    Numeração Fixa: [21]
+    
+    Piloto: Guanyu Zhou
+    Numeração Fixa: [24]
+    
+    Piloto: Heikki Kovalainen
+    Numeração Fixa: [7]
+    
+    Piloto: Jack Aitken
+    Numeração Fixa: [89]
+    
+    Piloto: Jean-Eric Vergne
+    Numeração Fixa: [18 25]
+    
+    Piloto: Jenson Button
+    Numeração Fixa: [ 5 22]
+    
+    Piloto: Jolyon Palmer
+    Numeração Fixa: [30]
+    
+    Piloto: Jules Bianchi
+    Numeração Fixa: [22 17]
+    
+    Piloto: Kamui Kobayashi
+    Numeração Fixa: [10]
+    
+    Piloto: Kevin Magnussen
+    Numeração Fixa: [20]
+    
+    Piloto: Kimi Raikkönen
+    Numeração Fixa: [7]
+    
+    Piloto: Lance Stroll
+    Numeração Fixa: [18]
+    
+    Piloto: Lando Norris
+    Numeração Fixa: [4]
+    
+    Piloto: Lewis Hamilton
+    Numeração Fixa: [10 44]
+    
+    Piloto: Marcus Ericsson
+    Numeração Fixa: [9]
+    
+    Piloto: Mark Webber
+    Numeração Fixa: [2]
+    
+    Piloto: Max Chilton
+    Numeração Fixa: [23  4]
+    
+    Piloto: Max Verstappen
+    Numeração Fixa: [33  1]
+    
+    Piloto: Mick Schumacher
+    Numeração Fixa: [47]
+    
+    Piloto: Nicholas Latifi
+    Numeração Fixa: [6]
+    
+    Piloto: Nico Hulkenberg
+    Numeração Fixa: [11 27]
+    
+    Piloto: Nico Rosberg
+    Numeração Fixa: [9 6]
+    
+    Piloto: Nikita Mazepin
+    Numeração Fixa: [9]
+    
+    Piloto: Nyck De Vries
+    Numeração Fixa: [45]
+    
+    Piloto: Pascal Wehrlein
+    Numeração Fixa: [94]
+    
+    Piloto: Pastor Maldonado
+    Numeração Fixa: [16 13]
+    
+    Piloto: Paul di Resta
+    Numeração Fixa: [14 40]
+    
+    Piloto: Pierre Gasly
+    Numeração Fixa: [10]
+    
+    Piloto: Pietro Fittipaldi
+    Numeração Fixa: [51]
+    
+    Piloto: Rio Haryanto
+    Numeração Fixa: [88]
+    
+    Piloto: Robert Kubica
+    Numeração Fixa: [88]
+    
+    Piloto: Roberto Merhi
+    Numeração Fixa: [98]
+    
+    Piloto: Romain Grosjean
+    Numeração Fixa: [8]
+    
+    Piloto: Sebastian Vettel
+    Numeração Fixa: [1 5]
+    
+    Piloto: Sergey Sirotkin
+    Numeração Fixa: [35]
+    
+    Piloto: Sergio Perez
+    Numeração Fixa: [ 6 11]
+    
+    Piloto: Stoffel Vandoorne
+    Numeração Fixa: [47  2]
+    
+    Piloto: Valtteri Bottas
+    Numeração Fixa: [17 77]
+    
+    Piloto: Will Stevens
+    Numeração Fixa: [46 28]
+    
+    Piloto: Yuki Tsunoda
+    Numeração Fixa: [22]
+    
+
+
 ### 3.5. Qual equipe teve mais pódios no GP do Brasil?
+
+
+```python
+# Filtramos apenas os registros do GP do Brasil
+brazil_gp = dataFull[dataFull['País'] == 'Brazil']
+
+# Agrupamos os dados pela equipe e contamos o número de pódios
+podium_count = brazil_gp.groupby('Equipe').size()
+
+# Identificamos a equipe com o maior número de pódios
+team_max_podios = podium_count.idxmax()
+
+print("Equipe com mais pódios no Grande Prêmio do Brasil:", team_max_podios)
+print("Número de pódios:", podium_count[team_max_podios])
+```
+
+    Equipe com mais pódios no Grande Prêmio do Brasil: Ferrari
+    Número de pódios: 18
+
 
 ## REFERÊNCIAS
 
